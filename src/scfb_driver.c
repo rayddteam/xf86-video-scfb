@@ -330,7 +330,7 @@ ScfbProbe(DriverPtr drv, int flags)
 	for (i = 0; i < numDevSections; i++) {
 		ScrnInfoPtr pScrn = NULL;
 		dev = xf86FindOptionValue(devSections[i]->options, "device");
-		if ((fd = xf86Info.screenFd) >= 0) {
+		if ((fd = xf86Info.consoleFd) >= 0) {
 			entity = xf86ClaimFbSlot(drv, 0, devSections[i], TRUE);
 			pScrn = xf86ConfigFbEntity(NULL,0,entity,
 						   NULL,NULL,NULL,NULL);
@@ -390,7 +390,7 @@ ScfbPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
 
 	dev = xf86FindOptionValue(fPtr->pEnt->device->options, "device");
-	fPtr->fd = xf86Info.screenFd;
+	fPtr->fd = xf86Info.consoleFd;
 	if (fPtr->fd == -1) {
 		return FALSE;
 	}
