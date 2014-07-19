@@ -411,7 +411,14 @@ ScfbPreInit(ScrnInfoPtr pScrn, int flags)
 	    "Using: depth (%d),\twidth (%d),\t height (%d)\n",
 	    fPtr->info.vi_depth,fPtr->info.vi_width, fPtr->info.vi_height);
 
-	fPtr->linebytes = fPtr->info.vi_width * fPtr->info.vi_pixel_size;
+	if (ioctl(fPtr->fd, FBIO_GETLINEWIDTH, &fPtr->linebytes) == -1) {
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			   "ioctl FBIO_GETLINEWIDTH fail: %s. "
+			   "Falling back to width * bytes per pixel.\n",
+			   strerror(errno));
+		fPtr->linebytes = fPtr->info.vi_width *
+		    fPtr->info.vi_pixel_size;
+	}
 
 	/* Handle depth */
 	default_depth = fPtr->info.vi_depth <= 24 ? fPtr->info.vi_depth : 24;
