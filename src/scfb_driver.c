@@ -584,6 +584,18 @@ ScfbPreInit(ScrnInfoPtr pScrn, int flags)
 	return TRUE;
 }
 
+static void
+scfbUpdateRotatePacked(ScreenPtr pScreen, shadowBufPtr pBuf)
+{
+    shadowUpdateRotatePacked(pScreen, pBuf);
+}
+
+static void
+scfbUpdatePacked(ScreenPtr pScreen, shadowBufPtr pBuf)
+{
+    shadowUpdatePacked(pScreen, pBuf);
+}
+
 static Bool
 ScfbCreateScreenResources(ScreenPtr pScreen)
 {
@@ -602,7 +614,7 @@ ScfbCreateScreenResources(ScreenPtr pScreen)
 	pPixmap = pScreen->GetScreenPixmap(pScreen);
 
 	if (!shadowAdd(pScreen, pPixmap, fPtr->rotate ?
-		shadowUpdateRotatePackedWeak() : shadowUpdatePackedWeak(),
+		scfbUpdateRotatePacked : scfbUpdatePacked,
 		ScfbWindowLinear, fPtr->rotate, NULL)) {
 		return FALSE;
 	}
