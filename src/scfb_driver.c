@@ -436,6 +436,34 @@ ScfbPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Color weight */
 	if (pScrn->depth > 8) {
 		rgb zeros = { 0, 0, 0 }, masks = { 0, 0, 0 };
+#ifdef FBIO_GETRGBOFFS
+		struct fb_rgboffs offs;
+
+		if (ioctl(fPtr->fd, FBIO_GETRGBOFFS, &offs) == -1) {
+			xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+				   "ioctl FBIO_GETRGBOFFS fail: %s. "
+				   "Falling back to default color format.\n",
+				   strerror(errno));
+			memset(&offs, 0, sizeof(offs));
+		}
+
+		/*
+		 * If FBIO_GETRGBOFFS returned any non-zero offset, set the
+		 * RGB masks appropriately.
+		 *
+		 * As there was an issue in Xorg server's RGB masks handling
+		 * (https://gitlab.freedesktop.org/xorg/xserver/-/issues/1112),
+		 * that is only fixed in master and 21.1.x releases for now,
+		 * avoid modifying the masks if they correspond to the default
+		 * values used by X.
+		 */
+		if ((offs.red != 0 || offs.green != 0 || offs.blue != 0) &&
+		    !(offs.red == 16 && offs.green == 8 && offs.blue == 0)) {
+			masks.red = 0xff << offs.red;
+			masks.green = 0xff << offs.green;
+			masks.blue = 0xff << offs.blue;
+		}
+#endif
 
 		if (!xf86SetWeight(pScrn, zeros, masks))
 			return FALSE;
